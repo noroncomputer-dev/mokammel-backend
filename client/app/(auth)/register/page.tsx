@@ -56,7 +56,6 @@ export default function RegisterPage() {
       formData.name,
       formData.email,
       formData.password,
-      formData.phone,
     );
     setLoading(false);
     if (success) {

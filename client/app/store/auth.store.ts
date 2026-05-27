@@ -69,13 +69,19 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      register: async (name, email, password) => {
+      register: async (
+        name: string,
+        email: string,
+        password: string,
+        phone?: string,
+      ) => {
         set({ isLoading: true });
         try {
           const response = await api.post("/auth/register", {
             name,
             email,
             password,
+            phone: phone || undefined,
           });
 
           if (response.data.success) {
@@ -84,19 +90,15 @@ export const useAuthStore = create<AuthStore>()(
             return { success: true };
           }
           set({ isLoading: false });
-          return {
-            success: false,
-            message: response.data.message || "خطا در ثبت‌نام",
-          };
+          return { success: false, message: response.data.message };
         } catch (error: any) {
           set({ isLoading: false });
           return {
             success: false,
-            message: error.response?.data?.message || "خطا در ارتباط با سرور",
+            message: error.response?.data?.message || "خطا در ثبت‌نام",
           };
         }
       },
-
       logout: async () => {
         try {
           await api.post("/auth/logout");
