@@ -1,13 +1,23 @@
+import mongoose from "mongoose";
 import dotenv from "dotenv";
-import app from "./app";
-import connectDB from "./config/db";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+const connectDB = async () => {
+  try {
+    const uri = process.env.MONGODB_URI;
+    console.log("🔍 Checking MONGODB_URI:", uri ? "✅ exists" : "❌ MISSING");
 
-connectDB();
+    if (!uri) {
+      throw new Error("MONGODB_URI is not defined");
+    }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    await mongoose.connect(uri);
+    console.log("✅ MongoDB connected successfully");
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error);
+    process.exit(1);
+  }
+};
+
+export default connectDB;
