@@ -1,0 +1,465 @@
+@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap");
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────── */
+/* DARK MODE VARIANT                           */
+/* ─────────────────────────────────────────── */
+@layer utilities {
+  .bg-background {
+    background-color: rgb(var(--background));
+  }
+  .text-foreground {
+    color: rgb(var(--foreground));
+  }
+  .bg-primary {
+    background-color: rgb(var(--primary));
+  }
+  .text-primary {
+    color: rgb(var(--primary));
+  }
+  .border-border {
+    border-color: rgb(var(--border));
+  }
+}
+@custom-variant dark (&:is(.dark, .dark *));
+
+/* ─────────────────────────────────────────── */
+/* DESIGN TOKENS — LIGHT MODE                  */
+/* ─────────────────────────────────────────── */
+
+:root {
+  /* Background & Surface */
+  --background: 250 248 242; /* cream warm white */
+  --foreground: 15 12 8; /* near black warm */
+
+  --card: 255 255 255;
+  --card-foreground: 15 12 8;
+
+  --popover: 255 255 255;
+  --popover-foreground: 15 12 8;
+
+  --muted: 245 241 232; /* warm off-white */
+  --muted-foreground: 120 110 95;
+
+  --border: 220 210 190;
+
+  /* Gold Accent */
+  --primary: 186 144 12; /* rich gold #BA900C */
+  --primary-foreground: 255 255 255;
+
+  --secondary: 245 241 232;
+  --accent: 212 160 17; /* bright gold */
+
+  --ring: 186 144 12;
+
+  --radius: 16px;
+
+  /* Gold Glow */
+  --glow-gold: rgba(186, 144, 12, 0.25);
+  --glow-gold-strong: rgba(186, 144, 12, 0.45);
+}
+
+/* ─────────────────────────────────────────── */
+/* DESIGN TOKENS — DARK MODE                   */
+/* ─────────────────────────────────────────── */
+
+.dark {
+  --background: 10 10 10; /* near black */
+  --foreground: 245 240 228; /* warm cream */
+
+  --card: 20 18 14; /* very dark warm */
+  --card-foreground: 245 240 228;
+
+  --popover: 20 18 14;
+  --popover-foreground: 245 240 228;
+
+  --muted: 28 24 18; /* dark warm */
+  --muted-foreground: 150 138 112;
+
+  --border: 45 38 25; /* subtle warm border */
+
+  --primary: 212 160 17; /* bright gold #D4A011 */
+  --primary-foreground: 10 10 10;
+
+  --secondary: 28 24 18;
+  --accent: 240 185 30; /* vivid gold highlight */
+
+  --ring: 212 160 17;
+
+  --glow-gold: rgba(212, 160, 17, 0.3);
+  --glow-gold-strong: rgba(212, 160, 17, 0.55);
+}
+
+/* ─────────────────────────────────────────── */
+/* BASE                                        */
+/* ─────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+  border-color: rgb(var(--border) / 0.6);
+}
+
+html {
+  font-family: "Vazirmatn", sans-serif;
+  scroll-behavior: smooth;
+  font-size: 15px;
+}
+
+body {
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease;
+}
+
+/* ─────────────────────────────────────────── */
+/* TYPOGRAPHY                                  */
+/* ─────────────────────────────────────────── */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em;
+}
+
+/* ─────────────────────────────────────────── */
+/* SCROLLBAR                                   */
+/* ─────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--primary) / 0.5);
+}
+
+/* ─────────────────────────────────────────── */
+/* GLASS MORPHISM                              */
+/* ─────────────────────────────────────────── */
+
+.glass {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.06),
+    inset 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.dark .glass {
+  background: rgba(20, 18, 14, 0.6);
+  border: 1px solid rgba(186, 144, 12, 0.1);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px rgba(212, 160, 17, 0.06);
+}
+
+/* ─────────────────────────────────────────── */
+/* GOLD GLOW CARD                              */
+/* ─────────────────────────────────────────── */
+
+.card-luxury {
+  border-radius: var(--radius);
+  background: rgb(var(--card));
+  border: 1px solid rgb(var(--border) / 0.5);
+  transition:
+    transform 0.4s ease,
+    box-shadow 0.4s ease,
+    border-color 0.35s ease;
+}
+
+.card-luxury:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgb(var(--primary) / 0.12);
+}
+
+.dark .card-luxury:hover {
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgb(var(--primary) / 0.2),
+    0 0 24px rgb(var(--primary) / 0.06);
+}
+
+/* ─────────────────────────────────────────── */
+/* GOLD BUTTON                                 */
+/* ─────────────────────────────────────────── */
+
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--primary));
+  color: rgb(var(--primary-foreground));
+  border-radius: 14px;
+  font-weight: 700;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.3s ease;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px var(--glow-gold-strong);
+}
+
+.btn-gold::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transition: transform 0.65s ease;
+}
+
+.btn-gold:hover::after {
+  transform: translateX(100%);
+}
+
+/* ─────────────────────────────────────────── */
+/* OUTLINE GOLD BUTTON                         */
+/* ─────────────────────────────────────────── */
+
+.btn-gold-outline {
+  border: 1.5px solid rgb(var(--primary) / 0.5);
+  color: rgb(var(--primary));
+  border-radius: 14px;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.btn-gold-outline:hover {
+  background: rgb(var(--primary) / 0.08);
+  border-color: rgb(var(--primary));
+}
+
+/* ─────────────────────────────────────────── */
+/* INPUT                                       */
+/* ─────────────────────────────────────────── */
+
+.input-luxury {
+  background: rgb(var(--muted));
+  border: 1.5px solid rgb(var(--border));
+  color: rgb(var(--foreground));
+  border-radius: 12px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.input-luxury:focus {
+  outline: none;
+  border-color: rgb(var(--primary));
+  box-shadow: 0 0 0 3px var(--glow-gold);
+}
+
+/* ─────────────────────────────────────────── */
+/* GOLD GRADIENT TEXT                          */
+/* ─────────────────────────────────────────── */
+
+.gold-text {
+  background: linear-gradient(135deg, #d4a017 0%, #f0c040 50%, #ba900c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .gold-text {
+  background: linear-gradient(135deg, #ebb833 0%, #f5d060 50%, #d4a017 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─────────────────────────────────────────── */
+/* SECTION DIVIDER                             */
+/* ─────────────────────────────────────────── */
+
+.divider-gold {
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, rgb(var(--primary)), transparent);
+  border-radius: 999px;
+}
+
+/* ─────────────────────────────────────────── */
+/* BADGE                                       */
+/* ─────────────────────────────────────────── */
+
+.badge-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: rgb(var(--primary) / 0.1);
+  color: rgb(var(--primary));
+  border: 1px solid rgb(var(--primary) / 0.25);
+}
+
+.dark .badge-gold {
+  background: rgb(var(--primary) / 0.12);
+  border-color: rgb(var(--primary) / 0.3);
+}
+
+/* ─────────────────────────────────────────── */
+/* REVEAL ANIMATION                            */
+/* ─────────────────────────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────── */
+/* FLOAT                                       */
+/* ─────────────────────────────────────────── */
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────── */
+/* SHIMMER                                     */
+/* ─────────────────────────────────────────── */
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.12),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+/* ─────────────────────────────────────────── */
+/* SELECTION                                   */
+/* ─────────────────────────────────────────── */
+
+::selection {
+  background: rgb(var(--primary) / 0.2);
+  color: rgb(var(--foreground));
+}
+/* ==================== انیمیشن اسلاید از راست (باز شدن) ==================== */
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-slideInFromRight {
+  animation: slideInFromRight 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+/* انیمیشن باز شدن سایدبار (از راست به چپ) */
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+/* ==================== انیمیشن اسلاید به راست (بسته شدن) ==================== */
+@keyframes slideOutToRight {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-slideOutToRight {
+  animation: slideOutToRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ==================== انیمیشن فید این ==================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* ==================== انیمیشن فید اوت ==================== */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fadeOut {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 4px rgba(212, 160, 17, 0.5));
+}
