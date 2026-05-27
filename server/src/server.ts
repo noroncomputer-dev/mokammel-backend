@@ -1,23 +1,18 @@
-import mongoose from "mongoose";
 import dotenv from "dotenv";
-
 dotenv.config();
 
-const connectDB = async () => {
-  try {
-    const uri = process.env.MONGODB_URI;
-    console.log("🔍 Checking MONGODB_URI:", uri ? "✅ exists" : "❌ MISSING");
+import app from "./app";
+import connectDB from "./config/db";
 
-    if (!uri) {
-      throw new Error("MONGODB_URI is not defined");
-    }
+const PORT = process.env.PORT || 5000;
 
-    await mongoose.connect(uri);
-    console.log("✅ MongoDB connected successfully");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    process.exit(1);
-  }
-};
+// تست ساده برای ریشه
+app.get("/", (req, res) => {
+  res.send("Mokammel Backend is running 🚀");
+});
 
-export default connectDB;
+connectDB();
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

@@ -58,6 +58,10 @@ app.get("/", (_req, res) => {
   res.send("API Running...");
 });
 
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "Server is running" });
+});
+
 // ─── Routes ────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
@@ -77,7 +81,7 @@ app.use("/api/tickets", ticketRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/sliders", sliderRoutes);
 app.use("/api/stats", statsRoutes);
-app.use("/api/promos", promoRoutes); 
+app.use("/api/promos", promoRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/posts", postRoutes);
 
