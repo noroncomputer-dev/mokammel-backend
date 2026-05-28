@@ -14,9 +14,11 @@ export interface IWishlist extends Document {
   updatedAt: Date;
 }
 
+const { ObjectId } = mongoose.Types;
+
 const wishlistItemSchema = new Schema<IWishlistItem>({
   product: {
-    type: Schema.Types.ObjectId,
+    type: ObjectId,
     ref: "Product",
     required: true,
   },
@@ -29,10 +31,10 @@ const wishlistItemSchema = new Schema<IWishlistItem>({
 const wishlistSchema = new Schema<IWishlist>(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: ObjectId,
       ref: "User",
       required: true,
-      unique: true, // هر کاربر فقط یک علاقه‌مندی دارد
+      unique: true,
     },
     items: [wishlistItemSchema],
   },
@@ -40,8 +42,6 @@ const wishlistSchema = new Schema<IWishlist>(
     timestamps: true,
   },
 );
-
-// ❌ ایندکس تکراری حذف شد (unique: true خودکار ایندکس میسازه)
 
 const Wishlist = mongoose.model<IWishlist>("Wishlist", wishlistSchema);
 export default Wishlist;
