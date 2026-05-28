@@ -447,3 +447,17 @@ export const updateProductStock = asyncHandler(
     );
   },
 );
+// دریافت همه محصولات بدون هیچ فیلتری
+export const getAllProductsNoFilter = asyncHandler(
+  async (req: Request, res: Response) => {
+    const products = await Product.find()
+      .populate("category", "name slug")
+      .populate("brand", "name logo");
+    
+    res.json({
+      success: true,
+      count: products.length,
+      products: products
+    });
+  }
+);
