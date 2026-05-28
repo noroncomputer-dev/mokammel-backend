@@ -1,5 +1,6 @@
+// store/auth.store.ts
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 import api from "@/services/api/axios";
 
 interface User {
@@ -8,13 +9,13 @@ interface User {
   email: string;
   role: string;
   avatar?: string;
-  phone?: string;
 }
 
 interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  setUser: (user: User | null) => void;
   login: (
     email: string,
     password: string,
@@ -41,7 +42,9 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
-      isLoading: true,
+      isLoading: false,
+
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
 
       login: async (email, password) => {
         set({ isLoading: true });
@@ -49,11 +52,8 @@ export const useAuthStore = create<AuthStore>()(
           const response = await api.post("/auth/login", { email, password });
 
           if (response.data.success) {
-            set({
-              user: response.data.data.user,
-              isAuthenticated: true,
-              isLoading: false,
-            });
+            const { user } = response.data.data;
+            set({ user, isAuthenticated: true, isLoading: false });
             return { success: true };
           }
           set({ isLoading: false });
@@ -70,7 +70,12 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      register: async (name, email, password, phone) => {
+      register: async (
+        name: string,
+        email: string,
+        password: string,
+        phone?: string,
+      ) => {
         set({ isLoading: true });
         try {
           const response = await api.post("/auth/register", {
@@ -81,11 +86,8 @@ export const useAuthStore = create<AuthStore>()(
           });
 
           if (response.data.success) {
-            set({
-              user: response.data.data.user,
-              isAuthenticated: true,
-              isLoading: false,
-            });
+            const { user } = response.data.data;
+            set({ user, isAuthenticated: true, isLoading: false });
             return { success: true };
           }
           set({ isLoading: false });
@@ -98,20 +100,18 @@ export const useAuthStore = create<AuthStore>()(
           };
         }
       },
-
       logout: async () => {
         try {
           await api.post("/auth/logout");
         } catch (error) {
           console.error("Logout error:", error);
         } finally {
-          set({ user: null, isAuthenticated: false, isLoading: false });
-          localStorage.removeItem("auth-storage");
+          set({ user: null, isAuthenticated: false });
         }
       },
 
       checkAuth: async () => {
-        console.log("🔍 Checking auth...");
+        set({ isLoading: true });
         try {
           const response = await api.get("/auth/me");
           if (response.data.success) {
@@ -124,11 +124,11 @@ export const useAuthStore = create<AuthStore>()(
             set({ user: null, isAuthenticated: false, isLoading: false });
           }
         } catch (error) {
-          console.error("checkAuth error:", error);
           set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },
 
+      // ✅ فراموشی رمز عبور - درخواست ایمیل
       forgotPassword: async (email) => {
         set({ isLoading: true });
         try {
@@ -147,6 +147,7 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
+      // ✅ ریست رمز عبور با توکن
       resetPassword: async (token, password) => {
         set({ isLoading: true });
         try {
@@ -170,7 +171,6 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: "auth-storage",
-      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,

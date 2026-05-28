@@ -11,21 +11,15 @@ const protectedRoutes = [
   "/checkout",
 ];
 
-// مسیرهای ادمین
+// مسیرهای ادمین (نیاز به لاگین + نقش ادمین)
 const adminRoutes = ["/dashboard/admin"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ✅ دیباگ - لاگ کوکی‌ها
-  console.log("🍪 All cookies:", request.cookies.getAll());
-  console.log("📍 Pathname:", pathname);
-
   // خواندن توکن از کوکی
   const token = request.cookies.get("accessToken")?.value;
   const isLoggedIn = !!token;
-
-  console.log("🔑 Token exists:", isLoggedIn);
 
   // تشخیص مسیرها
   const isProtectedRoute = protectedRoutes.some((route) =>
@@ -35,7 +29,6 @@ export function middleware(request: NextRequest) {
 
   // ========== لاگین نباشه و بره تو مسیر محافظت شده ==========
   if (isProtectedRoute && !isLoggedIn) {
-    console.log("🚫 Redirecting to login (protected route)");
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
@@ -43,7 +36,6 @@ export function middleware(request: NextRequest) {
 
   // ========== لاگین نباشه و بره تو مسیر ادمین ==========
   if (isAdminRoute && !isLoggedIn) {
-    console.log("🚫 Redirecting to login (admin route)");
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
@@ -56,9 +48,13 @@ export function middleware(request: NextRequest) {
       pathname === "/register" ||
       pathname === "/forget-password")
   ) {
-    console.log("✅ Already logged in, redirecting to home");
     return NextResponse.redirect(new URL("/", request.url));
   }
+
+  // ========== لاگین کرده ولی نقش ادمین نداره و میخواد بره تو مسیر ادمین ==========
+  // اینجا یه راه‌حل ساده: بک‌اند توکن رو decode میکنه، ما تو middleware نمیتونیم نقش رو چک کنیم.
+  // برای چک کردن نقش، باید یه API بزنی یا توکن رو decode کنی (که تو middleware ریسک داره)
+  // فعلاً همین کافیه، بک‌اند خودش چک میکنه.
 
   return NextResponse.next();
 }
