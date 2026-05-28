@@ -7,7 +7,7 @@ import path from "path";
 
 dotenv.config();
 
-// import routes
+// Import Routes
 import authRoutes from "./routes/auth.routes";
 import productRoutes from "./routes/product.routes";
 import categoryRoutes from "./routes/category.routes";
@@ -33,35 +33,10 @@ import compareRoutes from "./routes/compare.routes";
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// ==================== CORS - تنظیمات کامل ====================
-// لیست آدرس‌های مجاز
-const allowedOrigins = [
-  "http://localhost:3050",
-  "http://localhost:3000",
-  "https://mokammel-backend.vercel.app",
-  "https://mokammel-backend-dadd.vercel.app",
-  /\.vercel\.app$/, // همه دامنه‌های Vercel
-];
-
+// ==================== 1️⃣ CORS FIX (اجباری) ====================
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
-
-      // Check if origin is allowed
-      const isAllowed = allowedOrigins.some((pattern) => {
-        if (typeof pattern === "string") return pattern === origin;
-        return pattern.test(origin);
-      });
-
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        console.log(`Blocked origin: ${origin}`);
-        callback(null, true); // برای تست موقت، همه رو قبول کن
-      }
-    },
+    origin: true, // به همه اجازه بده
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
@@ -73,15 +48,15 @@ app.use(
   }),
 );
 
-// ==================== Middleware ====================
+// ==================== 2️⃣ Middleware ====================
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-// ==================== Static Files ====================
+// ==================== 3️⃣ Static Files ====================
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// ==================== Routes ====================
+// ==================== 4️⃣ API Routes ====================
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -104,41 +79,31 @@ app.use("/api/posts", postRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/compare", compareRoutes);
 
-// ==================== Health Check ====================
+// ==================== 5️⃣ Health Check ====================
 app.get("/api/health", (req, res) => {
-  res.json({
-    status: "ok",
-    message: "Server is running",
-    db: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
-  });
+  res.json({ status: "ok", message: "CORS Fixed - Server is running" });
 });
 
 app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
+  res.send("🚀 Backend is running with CORS enabled");
 });
 
-// ==================== Connect to MongoDB ====================
+// ==================== 6️⃣ MongoDB Connect ====================
 const connectDB = async () => {
   try {
     const uri = process.env.MONGODB_URI;
-    if (!uri) throw new Error("MONGODB_URI is not defined");
-
-    console.log("🔍 Connecting to MongoDB...");
+    if (!uri) throw new Error("MONGODB_URI is missing");
     await mongoose.connect(uri);
-    console.log("✅ MongoDB connected successfully");
+    console.log("✅ MongoDB connected");
   } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
+    console.error("❌ MongoDB error:", error);
     process.exit(1);
   }
 };
 
-// ==================== Start Server ====================
-const startServer = async () => {
-  await connectDB();
+// ==================== 7️⃣ Start ====================
+connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
   });
-};
-
-startServer();
+});
