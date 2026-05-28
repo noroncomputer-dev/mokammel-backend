@@ -33,29 +33,35 @@ import compareRoutes from "./routes/compare.routes";
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// ==================== 1️⃣ CORS FIX (اجباری) ====================
+// ==================== CORS - تنظیمات کامل برای Vercel ====================
 app.use(
   cors({
     origin: [
-      "http://localhost:3050",       // لوکال
-      "https://mokammel-backend.vercel.app", // فرانت‌اند در Vercel
-      /\.vercel\.app$/               // تمام ساب‌دامین‌های Vercel
+      "http://localhost:3050",
+      "https://mokammel-backend-dadd.vercel.app",
+      "https://mokammel-backend.vercel.app",
+      /\.vercel\.app$/,
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  })
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cookie",
+      "X-Requested-With",
+    ],
+  }),
 );
 
-// ==================== 2️⃣ Middleware ====================
+// ==================== Middleware ====================
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-// ==================== 3️⃣ Static Files ====================
+// ==================== Static Files ====================
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// ==================== 4️⃣ API Routes ====================
+// ==================== API Routes ====================
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -78,7 +84,7 @@ app.use("/api/posts", postRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/compare", compareRoutes);
 
-// ==================== 5️⃣ Health Check ====================
+// ==================== Health Check ====================
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "CORS Fixed - Server is running" });
 });
@@ -87,7 +93,7 @@ app.get("/", (req, res) => {
   res.send("🚀 Backend is running with CORS enabled");
 });
 
-// ==================== 6️⃣ MongoDB Connect ====================
+// ==================== MongoDB Connect ====================
 const connectDB = async () => {
   try {
     const uri = process.env.MONGODB_URI;
@@ -100,9 +106,10 @@ const connectDB = async () => {
   }
 };
 
-// ==================== 7️⃣ Start ====================
+// ==================== Start ====================
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📍 CORS enabled for: Vercel apps and localhost`);
   });
 });
