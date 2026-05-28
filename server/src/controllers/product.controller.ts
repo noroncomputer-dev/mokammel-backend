@@ -22,10 +22,8 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.max(1, parseInt(req.query.limit as string) || 12);
   const skip = (page - 1) * limit;
-
   // ساخت فیلتر داینامیک
-const filter: Record<string, any> = {};
-  // فیلتر دسته‌بندی (با _id یا slug)
+  const filter: any = {};
   if (req.query.category) {
     const Category = require("../models/category.model").default;
     let categoryId = req.query.category as string;
