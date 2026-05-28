@@ -156,21 +156,21 @@ export const requireAuth = (
   next();
 };
 
-// ==================== تابع تولید توکن (در کنترلر استفاده می‌شود) ====================
-export const generateTokens = (userId: string, role: string) => {
-  console.log("🔑 Generating tokens for user - role:", role);
+// // ==================== تابع تولید توکن (در کنترلر استفاده می‌شود) ====================
+// export const generateTokens = (userId: string, role: string) => {
+//   console.log("🔑 Generating tokens for user - role:", role);
 
-  const accessToken = jwt.sign(
-    { id: userId, role },
-    process.env.JWT_SECRET as string,
-    { expiresIn: "15m" },
-  );
+//   const accessToken = jwt.sign(
+//     { id: userId, role },
+//     process.env.JWT_SECRET as string,
+//     { expiresIn: "15m" },
+//   );
 
-  const refreshToken = jwt.sign(
-    { id: userId, role },
-    process.env.JWT_REFRESH_SECRET as string,
-    { expiresIn: "7d" },
-  );
+//   const refreshToken = jwt.sign(
+//     { id: userId, role },
+//     process.env.JWT_REFRESH_SECRET as string,
+//     { expiresIn: "7d" },
+//   );
 
-  return { accessToken, refreshToken };
-};
+//   return { accessToken, refreshToken };
+// };

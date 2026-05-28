@@ -15,7 +15,7 @@ const generateTokens = (userId: string, role: string) => {
   const accessToken = jwt.sign(
     { id: userId, role },
     process.env.JWT_SECRET as string,
-    { expiresIn: "7d" }, // ✅ از 15m به 7d تغییر بده
+    { expiresIn: "7d" },
   );
   const refreshToken = jwt.sign(
     { id: userId, role },
@@ -25,25 +25,27 @@ const generateTokens = (userId: string, role: string) => {
   return { accessToken, refreshToken };
 };
 
-// ==================== تابع کمکی برای تنظیم کوکی‌ها ====================
+// ==================== تابع کمکی برای تنظیم کوکی‌ها (اصلاح شده برای کراس دامنه) ====================
 const setTokenCookies = (
   res: Response,
   accessToken: string,
   refreshToken: string,
 ) => {
   const isProduction = process.env.NODE_ENV === "production";
+
+  // ✅ تنظیمات درست برای کراس دامنه (Vercel → Render)
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 روز (قبلاً 15 دقیقه بود!)
+    secure: true, // ✅ حتماً true برای HTTPS
+    sameSite: "none", // ✅ برای کراس دامنه
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 روز
     path: "/",
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
+    secure: true, // ✅ حتماً true برای HTTPS
+    sameSite: "none", // ✅ برای کراس دامنه
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 روز
     path: "/",
   });
@@ -56,7 +58,6 @@ const clearTokenCookies = (res: Response) => {
 };
 
 // ==================== ثبت‌نام ====================
-// @route POST /api/auth/register
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -78,7 +79,6 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     user.role,
   );
 
-  // تنظیم کوکی‌ها
   setTokenCookies(res, accessToken, refreshToken);
 
   res.status(201).json(
@@ -91,13 +91,11 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
         avatar: user.avatar,
         phone: user.phone,
       },
-      // accessToken در کوکی ذخیره شده، نیازی به ارسال در JSON نیست
     }),
   );
 });
 
 // ==================== ورود ====================
-// @route POST /api/auth/login
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -129,7 +127,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     user.role,
   );
 
-  // تنظیم کوکی‌ها
   setTokenCookies(res, accessToken, refreshToken);
 
   res.json(
@@ -142,20 +139,17 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
         avatar: user.avatar,
         phone: user.phone,
       },
-      // accessToken در کوکی ذخیره شده، نیازی به ارسال در JSON نیست
     }),
   );
 });
 
 // ==================== خروج ====================
-// @route POST /api/auth/logout
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   clearTokenCookies(res);
   res.json(apiResponse(true, "خروج با موفقیت انجام شد"));
 });
 
 // ==================== دریافت اطلاعات کاربر جاری ====================
-// @route GET /api/auth/me
 export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user;
   if (!user) {
@@ -179,7 +173,6 @@ export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
 });
 
 // ==================== تمدید توکن ====================
-// @route POST /api/auth/refresh
 export const refreshToken = asyncHandler(
   async (req: Request, res: Response) => {
     const refreshTokenFromCookie = req.cookies.refreshToken;
@@ -210,7 +203,6 @@ export const refreshToken = asyncHandler(
         user.role,
       );
 
-      // تنظیم کوکی‌های جدید
       setTokenCookies(res, accessToken, newRefreshToken);
 
       res.json(apiResponse(true, "توکن با موفقیت تمدید شد"));
@@ -230,7 +222,6 @@ export const refreshToken = asyncHandler(
 );
 
 // ==================== فراموشی رمز عبور ====================
-// @route POST /api/auth/forgot-password
 export const forgotPassword = asyncHandler(
   async (req: Request, res: Response) => {
     const { email } = req.body;
@@ -242,7 +233,6 @@ export const forgotPassword = asyncHandler(
 
     const user = await User.findOne({ email });
     if (!user) {
-      // برای امنیت، پیام مشابه برمی‌گردانیم (نگوییم ایمیل وجود ندارد)
       res.json(
         apiResponse(
           true,
@@ -252,11 +242,10 @@ export const forgotPassword = asyncHandler(
       return;
     }
 
-    // حذف توکن‌های قبلی
     await PasswordResetToken.deleteMany({ email });
 
     const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 ساعت
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await PasswordResetToken.create({ email, token, expiresAt });
 
@@ -278,7 +267,6 @@ export const forgotPassword = asyncHandler(
 );
 
 // ==================== بازنشانی رمز عبور ====================
-// @route POST /api/auth/reset-password
 export const resetPassword = asyncHandler(
   async (req: Request, res: Response) => {
     const { token, newPassword } = req.body;
@@ -314,7 +302,6 @@ export const resetPassword = asyncHandler(
 
     await PasswordResetToken.deleteOne({ token });
 
-    // پس از تغییر رمز، کوکی‌ها را پاک می‌کنیم تا کاربر دوباره وارد شود
     clearTokenCookies(res);
 
     res.json(
