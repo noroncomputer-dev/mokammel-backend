@@ -6,7 +6,8 @@ import apiResponse from "../utils/apiResponse";
 import Wishlist from "../models/wishlist.model";
 import Product from "../models/product.model";
 import { AuthRequest } from "../middleware/auth.middleware";
-
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 // @route   GET /api/wishlist
 // @desc    دریافت علاقه‌مندی‌های کاربر جاری
 // @access  Private
