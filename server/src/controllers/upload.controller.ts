@@ -6,23 +6,23 @@ import asyncHandler from "../utils/asyncHandler";
 import apiResponse from "../utils/apiResponse";
 import { AuthRequest } from "../middleware/auth.middleware";
 
+type MulterFile = Express.Multer.File;
+
 // @route  POST /api/upload
 // @desc   آپلود تصویر روی سرور محلی
 // @access Admin
 export const uploadImage = asyncHandler(
   async (req: AuthRequest, res: Response) => {
-    const file = (req as any).file as Express.Multer.File | undefined;
+    const file = (req as any).file as MulterFile | undefined;
 
     if (!file) {
       res.status(400).json(apiResponse(false, "فایلی انتخاب نشده است"));
       return;
     }
 
-    // ✅ ساخت URL قابل دسترسی از فرانت‌اند
     const baseUrl =
       process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
 
-    // ✅ مسیر را به‌صورت قطعی می‌سازیم
     const fileUrl = `${baseUrl}/uploads/products/${file.filename}`;
 
     console.log("✅ Image uploaded:", {
@@ -56,7 +56,6 @@ export const deleteImage = asyncHandler(
       return;
     }
 
-    // جلوگیری از path traversal attack
     if (publicId.includes("..") || publicId.includes("/")) {
       res.status(400).json(apiResponse(false, "نام فایل غیرمجاز است"));
       return;
@@ -76,17 +75,16 @@ export const deleteImage = asyncHandler(
 
 // @route  POST /api/upload/avatar
 // @desc   آپلود آواتار کاربر
-// @access User (خود کاربر)
+// @access User
 export const uploadAvatar = asyncHandler(
   async (req: AuthRequest, res: Response) => {
-    const file = (req as any).file as Express.Multer.File | undefined;
+    const file = (req as any).file as MulterFile | undefined;
 
     if (!file) {
       res.status(400).json(apiResponse(false, "فایلی انتخاب نشده است"));
       return;
     }
 
-    // اعتبارسنجی نوع فایل
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.mimetype)) {
       res
@@ -95,7 +93,6 @@ export const uploadAvatar = asyncHandler(
       return;
     }
 
-    // اعتبارسنجی حجم فایل (حداکثر ۲ مگابایت)
     if (file.size > 2 * 1024 * 1024) {
       res
         .status(400)
@@ -137,7 +134,6 @@ export const deleteAvatar = asyncHandler(
       return;
     }
 
-    // جلوگیری از path traversal attack
     if (publicId.includes("..") || publicId.includes("/")) {
       res.status(400).json(apiResponse(false, "نام فایل غیرمجاز است"));
       return;
