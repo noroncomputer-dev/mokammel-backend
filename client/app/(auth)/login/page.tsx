@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
 import { Eye, EyeOff, Zap } from "lucide-react";
-import api from "@/services/api/axios";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,24 +21,15 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    try {
-      const response = await api.post("/auth/login", { email, password });
+    const result = await login(email, password);
 
-      if (response.data.success) {
-        // ❌ حذف: localStorage.setItem("accessToken", accessToken);
-        // ✅ توکن در کوکی ذخیره شده، نیازی به ذخیره در localStorage نیست
-
-        useAuthStore.getState().setUser(response.data.data.user);
-        toast.success("ورود با موفقیت انجام شد");
-        router.push("/");
-      } else {
-        setError(response.data.message || "خطا در ورود");
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "خطا در ارتباط با سرور");
-    } finally {
-      setLoading(false);
+    if (result.success) {
+      toast.success("ورود با موفقیت انجام شد");
+      router.replace("/");
+    } else {
+      setError(result.message || "خطا در ورود");
     }
+    setLoading(false);
   };
 
   return (

@@ -36,16 +36,15 @@ const PORT = process.env.PORT || 8080;
 // ==================== 1️⃣ CORS FIX (اجباری) ====================
 app.use(
   cors({
-    origin: true, // به همه اجازه بده
+    origin: [
+      "http://localhost:3050",       // لوکال
+      "https://mokammel-backend.vercel.app", // فرانت‌اند در Vercel
+      /\.vercel\.app$/               // تمام ساب‌دامین‌های Vercel
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Cookie",
-      "X-Requested-With",
-    ],
-  }),
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  })
 );
 
 // ==================== 2️⃣ Middleware ====================
