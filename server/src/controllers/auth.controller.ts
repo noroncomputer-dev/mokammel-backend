@@ -31,21 +31,23 @@ const setTokenCookies = (
   accessToken: string,
   refreshToken: string,
 ) => {
+  // برای کراس دامنه (Vercel → Render)
   const isProduction = process.env.NODE_ENV === "production";
-
-  // ✅ تنظیمات درست برای کراس دامنه (Vercel → Render)
+  
+  // تنظیم کوکی accessToken
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: true, // ✅ حتماً true برای HTTPS
-    sameSite: "none", // ✅ برای کراس دامنه
+    secure: true,           // ✅ همیشه true برای HTTPS
+    sameSite: "none",       // ✅ مهم: برای کراس دامنه
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 روز
     path: "/",
   });
 
+  // تنظیم کوکی refreshToken
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: true, // ✅ حتماً true برای HTTPS
-    sameSite: "none", // ✅ برای کراس دامنه
+    secure: true,           // ✅ همیشه true برای HTTPS
+    sameSite: "none",       // ✅ مهم: برای کراس دامنه
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 روز
     path: "/",
   });

@@ -8,7 +8,7 @@ const protectedRoutes = [
   "/orders",
   "/addresses",
   "/wishlist",
-  "/checkout",
+  // "/checkout",
 ];
 
 // مسیرهای ادمین (نیاز به لاگین + نقش ادمین)
