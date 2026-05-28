@@ -16,6 +16,8 @@ interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  // پرچم برای جلوگیری از اجرای چندباره checkAuth که باعث ریلود/حلقه می‌شد
+  authChecked: boolean;
   setUser: (user: User | null) => void;
   login: (
     email: string,
@@ -38,12 +40,36 @@ interface AuthStore {
   ) => Promise<{ success: boolean; message: string }>;
 }
 
+/**
+ * هِلپر برای ست کردن یک کوکی client-side با نام accessToken
+ * این کوکی فقط برای middleware (که cookie-based است) لازم است
+ * تا middleware بفهمد کاربر لاگین است یا نه.
+ *
+ * توکن واقعی JWT اگر در بک‌اند به صورت httpOnly ست شود، آنجا امن است.
+ * این کوکی فقط یک "flag" است که می‌گوید کاربر authenticated است.
+ */
+const AUTH_COOKIE_NAME = "accessToken";
+
+function setAuthCookie(value: string, days = 7) {
+  if (typeof document === "undefined") return;
+  const maxAge = days * 24 * 60 * 60;
+  document.cookie = `${AUTH_COOKIE_NAME}=${encodeURIComponent(
+    value,
+  )}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
+
+function clearAuthCookie() {
+  if (typeof document === "undefined") return;
+  document.cookie = `${AUTH_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
+}
+
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      authChecked: false,
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
 
@@ -53,8 +79,20 @@ export const useAuthStore = create<AuthStore>()(
           const response = await api.post("/auth/login", { email, password });
 
           if (response.data.success) {
-            const { user } = response.data.data;
-            set({ user, isAuthenticated: true, isLoading: false });
+            const { user, accessToken } = response.data.data;
+            // ست کردن کوکی برای middleware
+            if (accessToken) {
+              setAuthCookie(accessToken);
+            } else {
+              // اگر بک‌اند توکن را httpOnly ست می‌کند، حداقل یک flag بگذاریم
+              setAuthCookie("1");
+            }
+            set({
+              user,
+              isAuthenticated: true,
+              isLoading: false,
+              authChecked: true,
+            });
             return { success: true };
           }
           set({ isLoading: false });
@@ -82,8 +120,18 @@ export const useAuthStore = create<AuthStore>()(
           });
 
           if (response.data.success) {
-            const { user } = response.data.data;
-            set({ user, isAuthenticated: true, isLoading: false });
+            const { user, accessToken } = response.data.data;
+            if (accessToken) {
+              setAuthCookie(accessToken);
+            } else {
+              setAuthCookie("1");
+            }
+            set({
+              user,
+              isAuthenticated: true,
+              isLoading: false,
+              authChecked: true,
+            });
             return { success: true };
           }
           set({ isLoading: false });
@@ -103,33 +151,60 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           console.error("Logout error:", error);
         } finally {
-          set({ user: null, isAuthenticated: false });
-          // پاک کردن localStorage هم به صورت دستی
+          clearAuthCookie();
+          set({
+            user: null,
+            isAuthenticated: false,
+            authChecked: true,
+          });
           if (typeof window !== "undefined") {
             localStorage.removeItem("auth-storage");
+            localStorage.removeItem("accessToken");
           }
         }
       },
 
       checkAuth: async () => {
-        console.log("🔍 checkAuth called...");
-        set({ isLoading: true }); // ✅ اضافه کن
+        // ⚠️ از اجرای دوباره جلوگیری می‌کنیم تا حلقه/بلینک ایجاد نشود
+        const state = get();
+        if (state.authChecked || state.isLoading) {
+          return;
+        }
+
+        // ⚠️ isLoading را اینجا true نمی‌کنیم تا کل UI بلاک نشود
+        // فقط در پس‌زمینه چک می‌کنیم
         try {
           const response = await api.get("/auth/me");
-          console.log("✅ Auth response:", response.data);
 
           if (response.data.success) {
+            const user = response.data.data.user;
+            // مطمئن شو که کوکی هم set شده تا middleware با state همخوان باشد
+            setAuthCookie("1");
             set({
-              user: response.data.data.user,
+              user,
               isAuthenticated: true,
               isLoading: false,
+              authChecked: true,
             });
           } else {
-            set({ user: null, isAuthenticated: false, isLoading: false });
+            clearAuthCookie();
+            set({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+              authChecked: true,
+            });
           }
         } catch (error: any) {
-          console.error("❌ checkAuth error:", error.response?.status);
-          set({ user: null, isAuthenticated: false, isLoading: false });
+          // اگر 401 یا هر خطای دیگه‌ای آمد، فقط state را پاک کن
+          // ❌ ریدایرکت نکن! اگر کاربر در صفحه عمومی است نباید به /login بره
+          clearAuthCookie();
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            authChecked: true,
+          });
         }
       },
 

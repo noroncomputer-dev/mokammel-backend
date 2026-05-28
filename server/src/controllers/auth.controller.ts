@@ -15,12 +15,12 @@ const generateTokens = (userId: string, role: string) => {
   const accessToken = jwt.sign(
     { id: userId, role },
     process.env.JWT_SECRET as string,
-    { expiresIn: "15m" },
+    { expiresIn: "7d" }, // ✅ از 15m به 7d تغییر بده
   );
   const refreshToken = jwt.sign(
     { id: userId, role },
     process.env.JWT_REFRESH_SECRET as string,
-    { expiresIn: "7d" },
+    { expiresIn: "30d" },
   );
   return { accessToken, refreshToken };
 };
@@ -32,20 +32,19 @@ const setTokenCookies = (
   refreshToken: string,
 ) => {
   const isProduction = process.env.NODE_ENV === "production";
-
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false, // ✅ برای تست توی http بذار false
+    secure: isProduction,
     sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 روز (قبلاً 15 دقیقه بود!)
     path: "/",
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false, // ✅ برای تست توی http بذار false
+    secure: isProduction,
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 روز
     path: "/",
   });
 };

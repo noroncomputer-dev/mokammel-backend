@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
 import { Eye, EyeOff, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
-  const router = useRouter();
   const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +23,13 @@ export default function LoginPage() {
 
     if (result.success) {
       toast.success("ورود با موفقیت انجام شد");
-      router.replace("/");
+      // پارامتر redirect از URL اگر وجود داشت
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get("redirect") || "/";
+      // از window.location.href استفاده می‌کنیم تا کوکی به‌درستی propagate شود
+      // و middleware در رفرش بعدی توکن جدید را ببیند (جلوگیری از حلقه ریدایرکت)
+      window.location.href = redirectTo;
+      return;
     } else {
       setError(result.message || "خطا در ورود");
     }

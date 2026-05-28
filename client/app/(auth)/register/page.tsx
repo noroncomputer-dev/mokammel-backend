@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
 import { Eye, EyeOff, Zap, Check } from "lucide-react";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const register = useAuthStore((state) => state.register);
   const [formData, setFormData] = useState({
     name: "",
@@ -52,16 +50,20 @@ export default function RegisterPage() {
       return;
     }
     setLoading(true);
-    const success = await register(
+    const result = await register(
       formData.name,
       formData.email,
       formData.password,
+      formData.phone || undefined,
     );
     setLoading(false);
-    if (success) {
-      router.push("/");
+    if (result.success) {
+      // از window.location استفاده می‌کنیم تا کوکی به‌درستی propagate شود
+      // و middleware در رفرش بعدی توکن جدید را ببیند (جلوگیری از حلقه ریدایرکت)
+      window.location.href = "/";
+      return;
     } else {
-      setError("ثبت‌نام با مشکل مواجه شد. لطفاً دوباره تلاش کن.");
+      setError(result.message || "ثبت‌نام با مشکل مواجه شد. لطفاً دوباره تلاش کن.");
     }
   };
 
