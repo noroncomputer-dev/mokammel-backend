@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mokammel-backend
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        value: mongodb+srv://noroncomputer_db_user:mfVXbPvocluMnbF7@mokammel.n73n723.mongodb.net/mokammel?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        value: supersecret
+      - key: NODE_ENV
+        value: production
