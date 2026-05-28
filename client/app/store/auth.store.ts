@@ -24,6 +24,7 @@ interface AuthStore {
     name: string,
     email: string,
     password: string,
+    phone?: string,
   ) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ui/ProductCard";
 import FilterSidebar from "@/components/ui/FilterSidebar";
@@ -173,7 +173,7 @@ const FilterTag = ({
   </span>
 );
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -625,5 +625,27 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full border-2 border-border border-t-primary animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">در حال بارگذاری محصولات...</p>
+          </div>
+        </div>
+      }
+    >
+      <ProductsContent />
+    </Suspense>
   );
 }

@@ -1,14 +1,13 @@
-// app/payment/verify/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, CheckCircle, XCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import api from "@/services/api/axios";
 import { toast } from "sonner";
 
-export default function PaymentVerifyPage() {
+function PaymentVerifyContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "failed">(
@@ -21,15 +20,12 @@ export default function PaymentVerifyPage() {
       const authority = searchParams.get("Authority");
       const paymentStatus = searchParams.get("Status");
 
-      console.log("Payment verify params:", { authority, paymentStatus });
-
       if (!authority) {
         setStatus("failed");
         setMessage("اطلاعات پرداخت معتبر نیست.");
         return;
       }
 
-      // اگر کاربر پرداخت را لغو کرده باشد
       if (paymentStatus === "cancel") {
         setStatus("failed");
         setMessage("پرداخت توسط شما لغو شد.");
@@ -37,21 +33,19 @@ export default function PaymentVerifyPage() {
       }
 
       try {
-        // ✅ درخواست تأیید به بک‌اند
         const response = await api.get("/payment/verify", {
           params: { authority, status: paymentStatus },
         });
 
-        console.log("Verify response:", response.data);
-
         if (response.data.success) {
           setStatus("success");
-          setMessage(`پرداخت شما با موفقیت انجام شد.`);
+          setMessage("پرداخت شما با موفقیت انجام شد.");
 
           // پاک کردن سبد خرید
-          localStorage.removeItem("cart-storage");
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("cart-storage");
+          }
 
-          // هدایت به صفحه سفارشات بعد از 3 ثانیه
           setTimeout(() => {
             router.push("/profile/orders");
           }, 3000);
@@ -59,11 +53,11 @@ export default function PaymentVerifyPage() {
           setStatus("failed");
           setMessage(response.data.message || "پرداخت ناموفق بود.");
         }
-      } catch (error: any) {
-        console.error("Verification error:", error);
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: { message?: string } } };
         setStatus("failed");
         setMessage(
-          error.response?.data?.message ||
+          err.response?.data?.message ||
             "خطا در تأیید پرداخت. لطفاً با پشتیبانی تماس بگیرید.",
         );
       }
@@ -126,5 +120,24 @@ export default function PaymentVerifyPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PaymentVerifyPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="relative w-16 h-16">
+            <div className="w-16 h-16 rounded-full border-4 border-border border-t-primary animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <PaymentVerifyContent />
+    </Suspense>
   );
 }

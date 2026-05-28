@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { XCircle, ArrowLeft, ShoppingBag, Sparkles } from "lucide-react";
+import { XCircle, ArrowLeft, ShoppingBag, Sparkles, Loader2 } from "lucide-react";
 
-export default function PaymentFailedPage() {
+function PaymentFailedContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
 
@@ -57,5 +58,19 @@ export default function PaymentFailedPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentFailedPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <PaymentFailedContent />
+    </Suspense>
   );
 }
