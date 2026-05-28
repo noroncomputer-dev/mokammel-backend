@@ -63,18 +63,12 @@ const shippingMethods = [
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
-  const {
-    items,
-    getSubtotal,
-    getDiscount,
-    getTotal,
-    clearCart,
-    getTotalItems,
-  } = useCartStore();
+  const { user, isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const { items, getSubtotal, getDiscount, getTotal, getTotalItems } =
+    useCartStore();
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -88,28 +82,58 @@ export default function CheckoutPage() {
   const [selectedShipping, setSelectedShipping] = useState(shippingMethods[0]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // ✅ 1️⃣ اول احراز هویت رو چک کن
   useEffect(() => {
+    const initAuth = async () => {
+      await checkAuth();
+      setAuthChecked(true);
+    };
+    initAuth();
     setMounted(true);
-    if (!isAuthenticated) {
-      router.push("/login?redirect=/checkout");
-    }
-  }, [isAuthenticated, router]);
+  }, [checkAuth]);
 
+  // ✅ 2️⃣ بعد از چک شدن احراز هویت، تصمیم بگیر
   useEffect(() => {
-    if (mounted && user?.name) {
-      setFormData((prev) => ({ ...prev, fullName: user.name || "" }));
+    if (authChecked && !isLoading) {
+      if (!isAuthenticated) {
+        router.replace("/login?redirect=/checkout");
+      }
     }
-    if (mounted && user?.phone) {
-      setFormData((prev) => ({ ...prev, phone: user.phone || "" }));
-    }
-  }, [user, mounted]);
+  }, [authChecked, isAuthenticated, isLoading, router]);
 
+  // ✅ 3️⃣ پر کردن اطلاعات کاربر در فرم
   useEffect(() => {
-    if (mounted && getTotalItems() === 0 && !submitting) {
+    if (mounted && isAuthenticated && user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user.name || "",
+        phone: user.phone || "",
+      }));
+    }
+  }, [user, mounted, isAuthenticated]);
+
+  // ✅ 4️⃣ چک کردن سبد خرید خالی
+  useEffect(() => {
+    if (
+      mounted &&
+      authChecked &&
+      !isLoading &&
+      isAuthenticated &&
+      getTotalItems() === 0 &&
+      !submitting
+    ) {
       router.push("/cart");
       toast.error("سبد خرید شما خالی است");
     }
-  }, [mounted, getTotalItems, router, submitting]);
+  }, [
+    mounted,
+    authChecked,
+    isLoading,
+    isAuthenticated,
+    getTotalItems,
+    router,
+    submitting,
+  ]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -190,21 +214,18 @@ export default function CheckoutPage() {
         paymentMethod: "zarinpal",
       };
 
-      // 1️⃣ ثبت سفارش در دیتابیس
       const response = await api.post("/orders", orderData);
 
       if (response.data.success) {
         const orderId = response.data.data.order._id;
         const finalAmount = response.data.data.order.finalPrice;
 
-        // 2️⃣ درخواست پرداخت به زرین‌پال (با احراز هویت)
         const payment = await paymentService.requestPayment(
           orderId,
           finalAmount,
           `پرداخت سفارش شماره ${response.data.data.order.orderNumber || orderId.slice(-8)}`,
         );
 
-        // 3️⃣ هدایت کاربر به درگاه پرداخت
         window.location.href = payment.paymentUrl;
       } else {
         toast.error(response.data.message || "خطا در ثبت سفارش");
@@ -226,7 +247,8 @@ export default function CheckoutPage() {
   const totalItems = mounted ? getTotalItems() : 0;
   const finalTotal = total + selectedShipping.price - discount;
 
-  if (!mounted) {
+  // ==================== نمایش لودینگ ====================
+  if (!mounted || isLoading || !authChecked) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8" dir="rtl">
         <div className="animate-pulse">
@@ -251,6 +273,11 @@ export default function CheckoutPage() {
         </div>
       </div>
     );
+  }
+
+  // اگر لاگین نباشه، چیزی نشون نده
+  if (!isAuthenticated) {
+    return null;
   }
 
   if (totalItems === 0 && !submitting) {
@@ -278,7 +305,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8" dir="rtl">
-      {/* ==================== بردکرامب ==================== */}
+      {/* بردکرامب */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
         <Link href="/" className="hover:text-primary transition-colors">
           خانه
@@ -292,10 +319,9 @@ export default function CheckoutPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* ==================== فرم اطلاعات ==================== */}
+        {/* فرم اطلاعات */}
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* اطلاعات ارسال */}
             <div className="bg-card rounded-2xl border border-border p-6">
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                 <User size={20} className="text-primary" />
@@ -420,7 +446,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* ==================== روش ارسال ==================== */}
+            {/* روش ارسال */}
             <div className="bg-card rounded-2xl border border-border p-6">
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                 <Truck size={20} className="text-primary" />
@@ -464,7 +490,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* دکمه ثبت سفارش */}
             <button
               type="submit"
               disabled={submitting}
@@ -485,7 +510,7 @@ export default function CheckoutPage() {
           </form>
         </div>
 
-        {/* ==================== خلاصه سفارش ==================== */}
+        {/* خلاصه سفارش */}
         <div className="lg:col-span-1">
           <div className="bg-card rounded-2xl border border-border p-6 sticky top-24">
             <h3 className="text-lg font-bold gold-text mb-4 pb-3 border-b border-border">
