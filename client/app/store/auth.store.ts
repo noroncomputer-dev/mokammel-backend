@@ -9,6 +9,7 @@ interface User {
   email: string;
   role: string;
   avatar?: string;
+  phone?: string;
 }
 
 interface AuthStore {
@@ -70,12 +71,7 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      register: async (
-        name: string,
-        email: string,
-        password: string,
-        phone?: string,
-      ) => {
+      register: async (name, email, password, phone) => {
         set({ isLoading: true });
         try {
           const response = await api.post("/auth/register", {
@@ -100,6 +96,7 @@ export const useAuthStore = create<AuthStore>()(
           };
         }
       },
+
       logout: async () => {
         try {
           await api.post("/auth/logout");
@@ -111,7 +108,7 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       checkAuth: async () => {
-        set({ isLoading: true });
+        // ❌ isLoading رو true نکن تا صفحه ریلود نشه
         try {
           const response = await api.get("/auth/me");
           if (response.data.success) {
@@ -128,7 +125,6 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      // ✅ فراموشی رمز عبور - درخواست ایمیل
       forgotPassword: async (email) => {
         set({ isLoading: true });
         try {
@@ -147,7 +143,6 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      // ✅ ریست رمز عبور با توکن
       resetPassword: async (token, password) => {
         set({ isLoading: true });
         try {
