@@ -14,16 +14,21 @@ export const protect = asyncHandler(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     let token: string | undefined;
 
+    console.log("🍪 Cookies received:", req.cookies); // برای دیباگ
+
     // 1️⃣ اول از کوکی بخوان
     if (req.cookies?.accessToken) {
       token = req.cookies.accessToken;
+      console.log("✅ Token found in cookies");
     }
     // 2️⃣ اگر در کوکی نبود، از هدر Authorization بخوان
     else if (req.headers.authorization?.startsWith("Bearer ")) {
       token = req.headers.authorization.split(" ")[1];
+      console.log("✅ Token found in Authorization header");
     }
 
     if (!token) {
+      console.log("❌ No token found");
       res
         .status(401)
         .json(apiResponse(false, "دسترسی غیرمجاز — توکن یافت نشد"));

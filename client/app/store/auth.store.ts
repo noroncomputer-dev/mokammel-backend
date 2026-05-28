@@ -1,4 +1,4 @@
-// client/src/store/auth.store.ts
+// client/app/store/auth.store.ts
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import api from "@/services/api/axios";
@@ -104,12 +104,20 @@ export const useAuthStore = create<AuthStore>()(
           console.error("Logout error:", error);
         } finally {
           set({ user: null, isAuthenticated: false });
+          // پاک کردن localStorage هم به صورت دستی
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("auth-storage");
+          }
         }
       },
 
+      // ✅ اصلاح شده - با console.log برای دیباگ
       checkAuth: async () => {
+        console.log("🔍 Checking auth...");
         try {
           const response = await api.get("/auth/me");
+          console.log("✅ Auth response:", response.data);
+
           if (response.data.success) {
             set({
               user: response.data.data.user,
@@ -119,8 +127,12 @@ export const useAuthStore = create<AuthStore>()(
           } else {
             set({ user: null, isAuthenticated: false, isLoading: false });
           }
-        } catch (error) {
-          console.error("checkAuth error:", error);
+        } catch (error: any) {
+          console.error(
+            "❌ checkAuth error:",
+            error.response?.status,
+            error.message,
+          );
           set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },
