@@ -10,7 +10,7 @@ import {
   Bell,
   Palette,
 } from "lucide-react";
-import api from "../../../services/api/axios";
+import api from "@/services/api/axios";
 
 interface Settings {
   storeName: string;
