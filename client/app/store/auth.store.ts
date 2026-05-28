@@ -111,9 +111,9 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      // ✅ اصلاح شده - با console.log برای دیباگ
       checkAuth: async () => {
-        console.log("🔍 Checking auth...");
+        console.log("🔍 checkAuth called...");
+        set({ isLoading: true }); // ✅ اضافه کن
         try {
           const response = await api.get("/auth/me");
           console.log("✅ Auth response:", response.data);
@@ -128,11 +128,7 @@ export const useAuthStore = create<AuthStore>()(
             set({ user: null, isAuthenticated: false, isLoading: false });
           }
         } catch (error: any) {
-          console.error(
-            "❌ checkAuth error:",
-            error.response?.status,
-            error.message,
-          );
+          console.error("❌ checkAuth error:", error.response?.status);
           set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },
