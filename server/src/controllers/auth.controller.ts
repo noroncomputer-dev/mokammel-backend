@@ -33,21 +33,19 @@ const setTokenCookies = (
 ) => {
   const isProduction = process.env.NODE_ENV === "production";
 
-  // تنظیم کوکی accessToken
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: isProduction,
+    secure: false, // ✅ برای تست توی http بذار false
     sameSite: "lax",
-    maxAge: 15 * 60 * 1000, // 15 دقیقه
+    maxAge: 15 * 60 * 1000,
     path: "/",
   });
 
-  // تنظیم کوکی refreshToken
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: isProduction,
+    secure: false, // ✅ برای تست توی http بذار false
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 روز
+    maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
   });
 };
