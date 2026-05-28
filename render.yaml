@@ -1,13 +1,14 @@
 services:
   - type: web
     name: mokammel-backend
-    runtime: node
+    runtime: image
+    repo: https://github.com/noroncomputer-dev/mokammel-backend
+    branch: main
     rootDir: server
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: PORT
-        value: 10000
+        value: 8080
       - key: MONGODB_URI
         value: mongodb+srv://noroncomputer_db_user:mfVXbPvocluMnbF7@mokammel.n73n723.mongodb.net/mokammel?retryWrites=true&w=majority
       - key: JWT_SECRET

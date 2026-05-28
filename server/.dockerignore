@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+uploads/
+*.log
+.DS_Store
+src/
+tsconfig.json
+README.md
+.git/
