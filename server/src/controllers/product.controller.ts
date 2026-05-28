@@ -24,8 +24,7 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   const skip = (page - 1) * limit;
 
   // ساخت فیلتر داینامیک
-  const filter: Record<string, any> = { isActive: true };
-
+const filter: Record<string, any> = {};
   // فیلتر دسته‌بندی (با _id یا slug)
   if (req.query.category) {
     const Category = require("../models/category.model").default;
