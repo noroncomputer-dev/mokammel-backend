@@ -13,7 +13,6 @@ import {
   advancedSearch,
   updateProductStock,
   permanentDeleteProduct,
-  getAllProductsNoFilter
 } from "../controllers/product.controller";
 import { protect, adminOnly } from "../middleware/auth.middleware";
 
@@ -40,5 +39,5 @@ router.put("/:id", protect, adminOnly, updateProduct);
 router.patch("/:id/stock", protect, adminOnly, updateProductStock);
 router.delete("/:id", protect, adminOnly, deleteProduct);
 router.delete("/:id/permanent", protect, adminOnly, permanentDeleteProduct);
-router.get("/all-no-filter", getAllProductsNoFilter);
+
 export default router;
