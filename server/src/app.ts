@@ -1,12 +1,15 @@
+// backend/src/server.ts
 import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import path from "path";
 
+// بارگذاری متغیرهای محیطی
 dotenv.config();
 
-// ==================== Import Routes ====================
+// import routes
 import authRoutes from "./routes/auth.routes";
 import productRoutes from "./routes/product.routes";
 import categoryRoutes from "./routes/category.routes";
@@ -27,45 +30,23 @@ import promoRoutes from "./routes/promo.routes";
 import statsRoutes from "./routes/stats.routes";
 import postRoutes from "./routes/post.routes";
 import chatRoutes from "./routes/chat.routes";
-import compareRoutes from "./routes/compare.routes";
-
-// ==================== Import Middleware ====================
-import errorMiddleware from "./middleware/error.middleware";
 
 const app = express();
-
-// ==================== CORS ====================
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(",").map((o) => o.trim())
-  : ["http://localhost:3050", "http://localhost:3000"];
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // allow requests with no origin (mobile apps, curl, etc.)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error(`CORS: origin ${origin} not allowed`));
-    },
-    credentials: true,
-  })
-);
+const PORT = process.env.PORT || 5000;
 
 // ==================== Middleware ====================
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3050",
+    credentials: true,
+  }),
+);
 
 // ==================== Static Files ====================
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-
-// ==================== Health Check ====================
-app.get("/", (_req, res) => {
-  res.json({ status: "ok", message: "Mokammel Backend is running 🚀" });
-});
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", message: "Server is running" });
-});
 
 // ==================== Routes ====================
 app.use("/api/auth", authRoutes);
@@ -88,9 +69,44 @@ app.use("/api/promos", promoRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/chat", chatRoutes);
-app.use("/api/compare", compareRoutes);
 
-// ==================== Error Middleware (must be last) ====================
-app.use(errorMiddleware);
+// ==================== Health Check ====================
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "Server is running" });
+});
 
-export default app;
+// ==================== Connect to MongoDB ====================
+const connectDB = async () => {
+  try {
+    const uri = process.env.MONGODB_URI;
+
+    if (!uri) {
+      throw new Error("❌ MONGODB_URI is not defined in .env file");
+    }
+
+    console.log("🔍 Connecting to MongoDB...");
+    console.log(
+      `📦 Database: ${uri.includes("localhost") ? "Local" : "Atlas (Cloud)"}`,
+    );
+
+    await mongoose.connect(uri);
+    console.log("✅ MongoDB connected successfully");
+
+    return true;
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error);
+    process.exit(1);
+  }
+};
+
+// ==================== Start Server ====================
+const startServer = async () => {
+  await connectDB();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+  });
+};
+
+startServer();

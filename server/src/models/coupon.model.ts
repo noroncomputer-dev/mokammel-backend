@@ -14,7 +14,7 @@ export interface ICoupon extends Document {
   updatedAt: Date;
 }
 
-const couponSchema = new Schema<ICoupon>(
+const couponSchema = new Schema(
   {
     code: {
       type: String,

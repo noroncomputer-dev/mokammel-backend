@@ -14,7 +14,7 @@ export interface ICompare extends Document {
   updatedAt: Date;
 }
 
-const compareItemSchema = new Schema<ICompareItem>({
+const compareItemSchema = new Schema({
   product: {
     type: Schema.Types.ObjectId,
     ref: "Product",
@@ -26,7 +26,7 @@ const compareItemSchema = new Schema<ICompareItem>({
   },
 });
 
-const compareSchema = new Schema<ICompare>(
+const compareSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -41,15 +41,13 @@ const compareSchema = new Schema<ICompare>(
   },
 );
 
-// ✅ اصلاح شده - فقط محدودیت تعداد محصولات
-compareSchema.pre("save", function (this: ICompare, next: any) {
-  if (this.items && this.items.length > 4) {
+compareSchema.pre("save", function (next: (err?: Error) => void) {
+  const doc = this as any;
+  if (doc.items && doc.items.length > 4) {
     return next(new Error("حداکثر ۴ محصول می‌توانید مقایسه کنید"));
   }
   next();
 });
-
-// ❌ ایندکس تکراری حذف شد (unique: true خودکار ایندکس میسازه)
 
 const Compare = mongoose.model<ICompare>("Compare", compareSchema);
 export default Compare;

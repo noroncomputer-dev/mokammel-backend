@@ -14,7 +14,7 @@ export interface INotification extends Document {
   updatedAt: Date;
 }
 
-const notificationSchema = new Schema<INotification>(
+const notificationSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -52,7 +52,6 @@ const notificationSchema = new Schema<INotification>(
   { timestamps: true },
 );
 
-// ✅ اصلاح شده - فقط یک ایندکس ترکیبی
 notificationSchema.index({ user: 1, createdAt: -1, isRead: 1 });
 
 const Notification = mongoose.model<INotification>(

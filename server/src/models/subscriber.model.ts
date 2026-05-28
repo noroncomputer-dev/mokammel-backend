@@ -6,7 +6,7 @@ export interface ISubscriber extends Document {
   subscribedAt: Date;
 }
 
-const subscriberSchema = new Schema<ISubscriber>(
+const subscriberSchema = new Schema(
   {
     email: {
       type: String,

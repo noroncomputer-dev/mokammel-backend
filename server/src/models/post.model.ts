@@ -16,7 +16,7 @@ export interface IPost extends Document {
   updatedAt: Date;
 }
 
-const postSchema = new Schema<IPost>(
+const postSchema = new Schema(
   {
     title: { type: String, required: true },
     slug: { type: String, required: true, unique: true },

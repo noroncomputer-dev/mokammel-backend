@@ -1,14 +1,7 @@
 // backend/src/models/product.model.ts
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, HydratedDocument } from "mongoose";
 
 // ==================== تایپ‌ها ====================
-export interface IProductFlavor {
-  name: string;
-  inStock: boolean;
-  priceAdjustment?: number;
-  label?: string;
-}
-
 export interface IProductNutritionFactExtra {
   label: string;
   value: string;
@@ -65,7 +58,7 @@ export interface IProduct extends Document {
 }
 
 // ==================== اسکیما ====================
-const productSchema = new Schema<IProduct>(
+const productSchema = new Schema(
   {
     name: {
       type: String,
@@ -223,9 +216,8 @@ const generateSlug = (name: string): string => {
 };
 
 // ==================== میدلور pre-save برای ساخت اسلاگ ====================
-productSchema.pre("save", async function () {
+productSchema.pre("save", async function (this: HydratedDocument<IProduct>) {
   try {
-    // اگر slug وجود دارد و نام تغییر نکرده، نیازی به تغییر نیست
     if (this.slug && !this.isModified("name")) {
       return;
     }
@@ -252,6 +244,7 @@ productSchema.pre("save", async function () {
     this.slug = `product-${Date.now()}`;
   }
 });
+
 // ==================== میدلور pre-update برای slug ====================
 productSchema.pre("findOneAndUpdate", async function () {
   const update = this.getUpdate() as any;

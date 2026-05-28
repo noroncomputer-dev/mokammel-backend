@@ -9,7 +9,7 @@ export interface IChatMessage extends Document {
   createdAt: Date;
 }
 
-const chatMessageSchema = new Schema<IChatMessage>(
+const chatMessageSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User" },
     message: { type: String, required: true },

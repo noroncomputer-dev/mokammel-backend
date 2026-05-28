@@ -15,7 +15,7 @@ export interface IPromo extends Document {
   updatedAt: Date;
 }
 
-const PromoSchema = new Schema<IPromo>(
+const PromoSchema = new Schema(
   {
     title: {
       type: String,

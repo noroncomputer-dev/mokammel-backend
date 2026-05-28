@@ -15,7 +15,7 @@ export interface ISetting extends Document {
   freeShippingThreshold: number;
 }
 
-const SettingSchema = new Schema<ISetting>(
+const SettingSchema = new Schema(
   {
     storeName: { type: String, default: "فروشگاه مکمل" },
     storeEmail: { type: String, default: "" },

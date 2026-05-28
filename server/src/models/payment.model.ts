@@ -11,7 +11,7 @@ export interface IPayment extends Document {
   updatedAt: Date;
 }
 
-const paymentSchema = new Schema<IPayment>(
+const paymentSchema = new Schema(
   {
     orderId: { type: Schema.Types.ObjectId, ref: "Order", required: true },
     amount: { type: Number, required: true },

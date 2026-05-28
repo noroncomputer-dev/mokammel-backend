@@ -12,7 +12,7 @@ export interface ISlider extends Document {
   updatedAt: Date;
 }
 
-const sliderSchema = new Schema<ISlider>(
+const sliderSchema = new Schema(
   {
     title: {
       type: String,

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, HydratedDocument } from "mongoose";
 
 export interface IOrderItem {
   product: mongoose.Types.ObjectId;
@@ -43,18 +43,16 @@ export interface IOrder extends Document {
   updatedAt: Date;
 }
 
-const orderSchema = new Schema<IOrder>(
+const orderSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "کاربر الزامی است"],
-      // index: true حذف شد
     },
     orderNumber: {
       type: String,
       unique: true,
-      // index: true حذف شد
     },
     items: [
       {
@@ -132,7 +130,7 @@ const orderSchema = new Schema<IOrder>(
 );
 
 // ایجاد شماره سفارش خودکار
-orderSchema.pre("save", async function () {
+orderSchema.pre("save", async function (this: HydratedDocument<IOrder>) {
   if (!this.orderNumber) {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
@@ -144,7 +142,6 @@ orderSchema.pre("save", async function () {
   }
 });
 
-// ✅ ایندکس ترکیبی با فیلدهای موجود
 orderSchema.index({
   user: 1,
   status: 1,

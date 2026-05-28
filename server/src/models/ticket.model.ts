@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, HydratedDocument } from "mongoose";
 
 export interface ITicketMessage {
   user: mongoose.Types.ObjectId;
@@ -23,25 +23,23 @@ export interface ITicket extends Document {
   updatedAt: Date;
 }
 
-const { ObjectId } = mongoose.Types;
-
-const ticketMessageSchema = new Schema<ITicketMessage>({
-  user: { type: ObjectId, ref: "User", required: true },
+const ticketMessageSchema = new Schema({
+  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   message: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
   attachments: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
 });
 
-const ticketSchema = new Schema<ITicket>(
+const ticketSchema = new Schema(
   {
     user: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "کاربر الزامی است"],
     },
     orderId: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Order",
     },
     ticketNumber: {
@@ -80,20 +78,18 @@ const ticketSchema = new Schema<ITicket>(
   { timestamps: true },
 );
 
-// ✅ اصلاح شده - با مشخص کردن نوع this
-ticketSchema.pre("save", async function (this: ITicket, next) {
+// ایجاد شماره تیکت خودکار
+ticketSchema.pre("save", async function (this: HydratedDocument<ITicket>) {
   if (!this.ticketNumber) {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const Ticket = mongoose.model<ITicket>("Ticket");
+    const Ticket = mongoose.model("Ticket");
     const count = await Ticket.countDocuments();
     this.ticketNumber = `TKT-${year}${month}-${(count + 1).toString().padStart(4, "0")}`;
   }
-  next();
 });
 
-// ایندکس ترکیبی
 ticketSchema.index({
   user: 1,
   status: 1,

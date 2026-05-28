@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, HydratedDocument } from "mongoose";
 
 export interface IReview extends Document {
   user: mongoose.Types.ObjectId;
@@ -20,7 +20,7 @@ export interface IReview extends Document {
   updatedAt: Date;
 }
 
-const reviewSchema = new Schema<IReview>(
+const reviewSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -79,7 +79,7 @@ reviewSchema.index({ product: 1, createdAt: -1 });
 reviewSchema.index({ product: 1, isApproved: 1 });
 
 // آپدیت rating محصول بعد از ثبت نظر
-reviewSchema.post("save", async function () {
+reviewSchema.post("save", async function (this: HydratedDocument<IReview>) {
   const Product = mongoose.model("Product");
   const stats = await mongoose.model("Review").aggregate([
     { $match: { product: this.product, isApproved: true } },

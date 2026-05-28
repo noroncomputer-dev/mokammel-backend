@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, CallbackError } from "mongoose";
+import mongoose, { Schema, Document, HydratedDocument } from "mongoose";
 
 export interface IBrand extends Document {
   name: string;
@@ -12,7 +12,7 @@ export interface IBrand extends Document {
   updatedAt: Date;
 }
 
-const brandSchema = new Schema<IBrand>(
+const brandSchema = new Schema(
   {
     name: {
       type: String,
@@ -36,8 +36,7 @@ const brandSchema = new Schema<IBrand>(
   { timestamps: true },
 );
 
-// ✅ اصلاح شده برای TypeScript 6 + Mongoose 9
-brandSchema.pre("save", function (next: (err?: CallbackError) => void) {
+brandSchema.pre("save", function (this: HydratedDocument<IBrand>, next: (err?: Error) => void) {
   if (this.isModified("name") && this.name) {
     this.slug = this.name
       .toLowerCase()

@@ -1,33 +1,28 @@
-import app from "./app";
-import mongoose from "mongoose";
+import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+const app = express();
+const PORT = process.env.PORT || 8080;
+app.use(cors());
+app.use(express.json());
 
-const connectDB = async () => {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error("❌ MONGODB_URI is not defined in environment");
+// Health check
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "Server is running" });
+});
 
-  console.log("🔍 Connecting to MongoDB...");
-  console.log(`📦 Database: ${uri.includes("localhost") ? "Local" : "Atlas (Cloud)"}`);
+// Test endpoint
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API is working!" });
+});
 
-  await mongoose.connect(uri);
-  console.log("✅ MongoDB connected successfully");
-};
+app.get("/", (req, res) => {
+  res.send("Mokammel Backend is running 🚀");
+});
 
-const startServer = async () => {
-  try {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
-    });
-  } catch (error) {
-    console.error("❌ Failed to start server:", error);
-    process.exit(1);
-  }
-};
-
-startServer();
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});

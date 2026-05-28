@@ -2,21 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+# ابتدا همه dependencies (شامل devDependencies) نصب می‌شن تا tsc کار کنه
 COPY package*.json ./
+RUN npm install --no-audit --no-fund
 
-# Install ALL dependencies (including devDeps for TypeScript build)
-RUN npm ci --no-audit --no-fund
-
-# Copy source code
+# کپی سورس‌کد و build
 COPY . .
-
-# Build TypeScript
 RUN npm run build
 
-# Remove devDependencies after build
+# حذف devDependencies برای image نهایی سبک‌تر
 RUN npm prune --production
 
-EXPOSE 10000
+EXPOSE 8080
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "/app/dist/server.js"]

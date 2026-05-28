@@ -36,7 +36,7 @@ const addressSchema = new Schema({
   isDefault: { type: Boolean, default: false },
 });
 
-const userSchema = new Schema<IUser>(
+const userSchema = new Schema(
   {
     name: {
       type: String,
@@ -76,7 +76,6 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
-
     isVerified: {
       type: Boolean,
       default: false,
@@ -97,7 +96,7 @@ const userSchema = new Schema<IUser>(
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password as string, salt);
 });
 
 // متد مقایسه رمز عبور

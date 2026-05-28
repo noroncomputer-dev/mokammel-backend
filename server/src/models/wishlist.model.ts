@@ -14,11 +14,9 @@ export interface IWishlist extends Document {
   updatedAt: Date;
 }
 
-const { ObjectId } = mongoose.Types;
-
-const wishlistItemSchema = new Schema<IWishlistItem>({
+const wishlistItemSchema = new Schema({
   product: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Product",
     required: true,
   },
@@ -28,10 +26,10 @@ const wishlistItemSchema = new Schema<IWishlistItem>({
   },
 });
 
-const wishlistSchema = new Schema<IWishlist>(
+const wishlistSchema = new Schema(
   {
     user: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
       unique: true,
