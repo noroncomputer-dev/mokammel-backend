@@ -1,6 +1,6 @@
-// store/auth.store.ts
+// client/src/store/auth.store.ts
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import api from "@/services/api/axios";
 
 interface User {
@@ -108,7 +108,6 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       checkAuth: async () => {
-        // ❌ isLoading رو true نکن تا صفحه ریلود نشه
         try {
           const response = await api.get("/auth/me");
           if (response.data.success) {
@@ -121,6 +120,7 @@ export const useAuthStore = create<AuthStore>()(
             set({ user: null, isAuthenticated: false, isLoading: false });
           }
         } catch (error) {
+          console.error("checkAuth error:", error);
           set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },
@@ -166,6 +166,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: "auth-storage",
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
