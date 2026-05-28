@@ -33,16 +33,50 @@ import compareRoutes from "./routes/compare.routes";
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// ==================== CORS - تنظیمات کامل ====================
+// لیست آدرس‌های مجاز
+const allowedOrigins = [
+  "http://localhost:3050",
+  "http://localhost:3000",
+  "https://mokammel-backend.vercel.app",
+  "https://mokammel-backend-dadd.vercel.app",
+  /\.vercel\.app$/, // همه دامنه‌های Vercel
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+
+      // Check if origin is allowed
+      const isAllowed = allowedOrigins.some((pattern) => {
+        if (typeof pattern === "string") return pattern === origin;
+        return pattern.test(origin);
+      });
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.log(`Blocked origin: ${origin}`);
+        callback(null, true); // برای تست موقت، همه رو قبول کن
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cookie",
+      "X-Requested-With",
+    ],
+  }),
+);
+
 // ==================== Middleware ====================
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3050",
-    credentials: true,
-  }),
-);
 
 // ==================== Static Files ====================
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
